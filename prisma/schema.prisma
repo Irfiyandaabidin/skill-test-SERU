@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(100) @unique
+  isAdmin Boolean @default(false)
+  password String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("users")
+}
+
+model VehicleBrand {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  types VehicleType[]
+  @@map("vehicle_brand")
+}
+
+model VehicleType {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(100)
+  brandId Int @map("brand_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  vehicleBrand VehicleBrand @relation(fields: [brandId], references: [id])
+
+  model VehicleModel[]
+  @@map("vehicle_type")
+}
+
+model VehicleModel {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(100)
+  typeId Int @map("type_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  vehicleType VehicleType @relation(fields: [typeId], references: [id])
+
+  pricelist Pricelist[]
+  @@map("vehicle_model")
+}
+
+model VehicleYear {
+  id Int @id @default(autoincrement())
+  year Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  pricelist Pricelist[]
+
+  @@map("vehicle_year")
+}
+
+model Pricelist {
+  id Int @id @default(autoincrement())
+  code String @db.VarChar(50)
+  price Int
+  yearId Int @map("year_id")
+  modelId Int @map("model_id")
+
+  vehicleYear VehicleYear @relation(fields: [yearId], references: [id])
+  vehicleModel VehicleModel @relation(fields: [modelId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("pricelist")
+}
