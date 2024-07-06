@@ -1,3 +1,54 @@
+1. SELECT s.name AS student_name, c.name AS class_name, t.name AS teacher_name
+FROM students s
+JOIN classes c ON s.class_id = c.id
+JOIN teachers t ON c.teacher_id = t.id;
+
+2. SELECT c.name AS class_name
+FROM classes c
+JOIN teachers t ON c.teacher_id = t.id
+WHERE t.name = 'Pak Anton';
+
+3. CREATE VIEW student_class_teacher AS
+SELECT s.name AS student_name, c.name AS class_name, t.name AS teacher_name
+FROM students s
+JOIN classes c ON s.class_id = c.id
+JOIN teachers t ON c.teacher_id = t.id;
+
+4. DELIMITER //
+
+CREATE PROCEDURE GetStudentClassTeacher()
+BEGIN
+    SELECT s.name AS student_name, c.name AS class_name, t.name AS teacher_name
+    FROM students s
+    JOIN classes c ON s.class_id = c.id
+    JOIN teachers t ON c.teacher_id = t.id;
+END //
+
+DELIMITER ;
+
+
+5. DELIMITER //
+
+CREATE TRIGGER before_insert_students
+BEFORE INSERT ON students
+FOR EACH ROW
+BEGIN
+    DECLARE student_count INT;
+    
+    SELECT COUNT(*)
+    INTO student_count
+    FROM students
+    WHERE name = NEW.name;
+
+    IF student_count > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Duplicate student name is not allowed';
+    END IF;
+END //
+
+DELIMITER ;
+
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
